@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Announcements{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Announcements</h1>
+    <p class="muted">Post instructions, reminders, and important class updates.</p>
+</div>
+<section class="card">
+    <h2>Post Announcement</h2>
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>Title</label><input name="title" type="text" required>
+        <label>Message</label><textarea name="body" rows="5" required></textarea>
+        <button class="btn primary" type="submit">Post Announcement</button>
+    </form>
+</section>
+<section class="card">
+    <h2>All Announcements</h2>
+    {% for a in announcements %}
+        <article class="announcement">
+            <div class="split-header">
+                <div>
+                    <h3>{{ a.title }}</h3>
+                    <p class="muted small">{{ a.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+                <form method="post" action="{{ url_for('admin_delete_announcement', announcement_id=a.id) }}" onsubmit="return confirm('Delete this announcement?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn small danger" type="submit">Delete</button>
+                </form>
+            </div>
+            <p>{{ a.body }}</p>
+        </article>
+    {% else %}
+        <p class="muted">No announcements posted yet.</p>
+    {% endfor %}
+</section>
+{% endblock %}

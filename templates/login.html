@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Login · GIMS Assignment Portal{% endblock %}
+{% block content %}
+<div class="auth-card">
+    <h1>University Assignment Portal</h1>
+    <p class="muted">Login with your university roll number and password.</p>
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label for="roll_number">Roll Number</label>
+        <input id="roll_number" name="roll_number" type="text" required autofocus>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" required>
+        <button class="btn primary full" type="submit">Login</button>
+    </form>
+    <p class="muted small">
+        Admin account default: <strong>admin</strong> / <strong>Admin@12345</strong>.
+        Change this before real use.
+    </p>
+</div>
+{% endblock %}

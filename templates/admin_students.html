@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Students{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Student Accounts</h1>
+    <p class="muted">Add, disable, reset, or remove student accounts.</p>
+</div>
+<section class="card">
+    <h2>Add Student</h2>
+    <form method="post" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div><label>Name</label><input name="name" type="text" required></div>
+        <div><label>Roll Number</label><input name="roll_number" type="text" required></div>
+        <div><label>Password</label><input name="password" type="password" minlength="6" required></div>
+        <div class="form-action"><button class="btn primary" type="submit">Add Student</button></div>
+    </form>
+</section>
+<section class="card">
+    <h2>Students ({{ students|length }})</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Roll No.</th><th>Name</th><th>Status</th><th>Submissions</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+            {% for student in students %}
+                <tr>
+                    <td>{{ student.roll_number }}</td>
+                    <td>{{ student.name }}</td>
+                    <td><span class="badge {{ 'accepted' if student.is_active else 'rejected' }}">{{ 'Active' if student.is_active else 'Disabled' }}</span></td>
+                    <td>{{ student.submissions|length }}</td>
+                    <td class="actions-cell">
+                        <form method="post" action="{{ url_for('admin_toggle_student', user_id=student.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="btn small" type="submit">{{ 'Disable' if student.is_active else 'Enable' }}</button>
+                        </form>
+                        <form method="post" action="{{ url_for('admin_reset_password', user_id=student.id) }}" class="inline-form">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input name="new_password" type="password" minlength="6" placeholder="New password" required>
+                            <button class="btn small" type="submit">Reset</button>
+                        </form>
+                        <form method="post" action="{{ url_for('admin_delete_student', user_id=student.id) }}" onsubmit="return confirm('Delete this student and all their submissions?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="btn small danger" type="submit">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="5" class="muted">No students added yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

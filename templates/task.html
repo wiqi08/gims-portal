@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ task.title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>{{ task.title }}</h1>
+    <p class="muted">
+        {{ task.subject.name }} · {{ task.type }} ·
+        Deadline: {{ task.deadline.strftime('%Y-%m-%d %H:%M') }}
+    </p>
+</div>
+<section class="card">
+    <h2>Instructions</h2>
+    <p>{{ task.description or "No additional instructions provided." }}</p>
+    {% if task.task_file %}
+        <p><a class="btn" href="{{ url_for('download_task_file', task_id=task.id) }}">Download Task File</a></p>
+    {% endif %}
+</section>
+<section class="card">
+    <h2>Your Submission</h2>
+    {% if submission %}
+        <p>
+            Status: <span class="badge {{ submission.status }}">{{ submission.status }}</span>
+            {% if submission.submitted_at > task.deadline %}
+                <span class="badge rejected">Late submission</span>
+            {% endif %}
+        </p>
+        <p class="muted">Submitted at: {{ submission.submitted_at.strftime('%Y-%m-%d %H:%M') }}</p>
+        <p>File: <a href="{{ url_for('download_submission', submission_id=submission.id) }}">{{ submission.original_filename }}</a></p>
+        {% if submission.admin_note %}
+            <div class="note"><strong>Admin note:</strong> {{ submission.admin_note }}</div>
+        {% endif %}
+    {% else %}
+        <p class="muted">You have not submitted this task yet.</p>
+    {% endif %}
+    {% if current_user.role == 'student' %}
+        {% if not submission or task.allow_resubmit %}
+            <form method="post" action="{{ url_for('submit_task', task_id=task.id) }}" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <label>{{ 'Resubmit your work' if submission else 'Upload your work' }}</label>
+                <input name="file" type="file" required>
+                <button class="btn primary" type="submit">{{ 'Resubmit' if submission else 'Submit' }}</button>
+            </form>
+        {% else %}
+            <p class="muted">Resubmission is not allowed for this task. Contact the CR if needed.</p>
+        {% endif %}
+    {% endif %}
+</section>
+{% endblock %}

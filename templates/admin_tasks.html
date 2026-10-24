@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Tasks{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Assignments & Quizzes</h1>
+    <p class="muted">Upload tasks with instructions, deadlines, and optional files.</p>
+</div>
+<section class="card">
+    <h2>Upload New Task</h2>
+    <form method="post" enctype="multipart/form-data" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div>
+            <label>Subject</label>
+            <select name="subject_id" required>
+                <option value="">Select subject</option>
+                {% for subject in subjects %}
+                    <option value="{{ subject.id }}">{{ subject.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>Type</label>
+            <select name="type" required>
+                <option value="assignment">Assignment</option>
+                <option value="quiz">Quiz</option>
+            </select>
+        </div>
+        <div><label>Title</label><input name="title" type="text" required></div>
+        <div><label>Deadline</label><input name="deadline" type="datetime-local" required></div>
+        <div class="span-2">
+            <label>Instructions / Description</label>
+            <textarea name="description" rows="4"></textarea>
+        </div>
+        <div><label>Task File (optional)</label><input name="task_file" type="file"></div>
+        <div class="checkbox-row">
+            <label><input name="allow_resubmit" type="checkbox" checked> Allow resubmission</label>
+        </div>
+        <div class="form-action span-2"><button class="btn primary" type="submit">Upload Task</button></div>
+    </form>
+</section>
+<section class="card">
+    <h2>All Tasks</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Subject</th><th>Type</th><th>Title</th><th>Deadline</th><th>Submissions</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+            {% for task in tasks %}
+                <tr>
+                    <td>{{ task.subject.name }}</td>
+                    <td><span class="badge submitted">{{ task.type }}</span></td>
+                    <td>{{ task.title }}</td>
+                    <td>{{ task.deadline.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ task.submissions|length }}</td>
+                    <td class="actions-cell">
+                        <a class="btn small" href="{{ url_for('admin_submissions', task_id=task.id) }}">View</a>
+                        <a class="btn small" href="{{ url_for('admin_download_all', task_id=task.id) }}">ZIP</a>
+                        <form method="post" action="{{ url_for('admin_delete_task', task_id=task.id) }}" onsubmit="return confirm('Delete this task and all submissions?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="btn small danger" type="submit">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="6" class="muted">No tasks uploaded yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

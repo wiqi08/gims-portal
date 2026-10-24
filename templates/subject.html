@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ subject.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>{{ subject.name }}</h1>
+    <p class="muted">Assignments, quizzes, deadlines, and submission status.</p>
+</div>
+<section class="card">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Type</th><th>Title</th><th>Deadline</th><th>Your Status</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+            {% for task in tasks %}
+                {% set submission = submissions.get(task.id) %}
+                <tr>
+                    <td><span class="badge submitted">{{ task.type }}</span></td>
+                    <td>{{ task.title }}</td>
+                    <td>{{ task.deadline.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        {% if submission %}
+                            <span class="badge {{ submission.status }}">{{ submission.status }}</span>
+                            {% if submission.submitted_at > task.deadline %}
+                                <span class="badge rejected">Late</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge pending">Not submitted</span>
+                        {% endif %}
+                    </td>
+                    <td><a class="btn small primary" href="{{ url_for('task', task_id=task.id) }}">Open</a></td>
+                </tr>
+            {% else %}
+                <tr><td colspan="5" class="muted">No tasks uploaded for this subject yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

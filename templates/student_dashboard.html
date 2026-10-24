@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Student Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Student Dashboard</h1>
+    <p class="muted">Welcome, {{ current_user.name }} ({{ current_user.roll_number }}).</p>
+</div>
+{% if announcements %}
+<section class="card">
+    <h2>Announcements</h2>
+    {% for a in announcements %}
+        <article class="announcement">
+            <h3>{{ a.title }}</h3>
+            <p class="muted small">{{ a.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            <p>{{ a.body }}</p>
+        </article>
+    {% endfor %}
+</section>
+{% endif %}
+<section class="card">
+    <h2>First Semester Subjects</h2>
+    <div class="subject-grid">
+        {% for subject in subjects %}
+            <a class="subject-card" href="{{ url_for('subject', subject_id=subject.id) }}">
+                <h3>{{ subject.name }}</h3>
+                <p>{{ subject.tasks|length }} task(s)</p>
+                <span>Open subject →</span>
+            </a>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

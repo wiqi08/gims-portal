@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Admin Dashboard</h1>
+        <p class="muted">Manage students, tasks, submissions, and announcements.</p>
+    </div>
+</div>
+<div class="stats-grid">
+    <div class="stat-card"><span>{{ stats.students }}</span><p>Students</p></div>
+    <div class="stat-card"><span>{{ stats.tasks }}</span><p>Tasks</p></div>
+    <div class="stat-card"><span>{{ stats.submissions }}</span><p>Submissions</p></div>
+    <div class="stat-card"><span>{{ stats.pending }}</span><p>Pending Review</p></div>
+</div>
+<div class="grid-2">
+    <section class="card">
+        <h2>Quick Actions</h2>
+        <div class="button-row">
+            <a class="btn primary" href="{{ url_for('admin_students') }}">Add Student</a>
+            <a class="btn" href="{{ url_for('admin_tasks') }}">Upload Task</a>
+            <a class="btn" href="{{ url_for('admin_submissions') }}">Review Submissions</a>
+            <a class="btn" href="{{ url_for('admin_announcements') }}">Post Announcement</a>
+        </div>
+    </section>
+    <section class="card">
+        <h2>Recent Submissions</h2>
+        {% if recent_submissions %}
+            <ul class="list">
+            {% for s in recent_submissions %}
+                <li>
+                    <strong>{{ s.student.name }}</strong>
+                    <span class="muted">({{ s.student.roll_number }})</span>
+                    submitted <em>{{ s.task.title }}</em>
+                    <span class="badge {{ s.status }}">{{ s.status }}</span>
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p class="muted">No submissions yet.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

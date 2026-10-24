@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Submissions{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Submissions</h1>
+    <p class="muted">Review, accept, reject, download, and track missing submissions.</p>
+</div>
+<section class="card">
+    <form method="get" class="filter-row">
+        <div>
+            <label>Filter by Task</label>
+            <select name="task_id">
+                <option value="">All tasks</option>
+                {% for task in tasks %}
+                    <option value="{{ task.id }}" {% if selected_task and selected_task.id == task.id %}selected{% endif %}>
+                        {{ task.subject.name }} · {{ task.type }} · {{ task.title }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>Status</label>
+            <select name="status">
+                <option value="">All statuses</option>
+                {% for st in ['pending', 'submitted', 'accepted', 'rejected'] %}
+                    <option value="{{ st }}" {% if status == st %}selected{% endif %}>{{ st }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-action"><button class="btn primary" type="submit">Apply Filter</button></div>
+    </form>
+</section>
+{% if selected_task %}
+<section class="card">
+    <div class="split-header">
+        <div>
+            <h2>{{ selected_task.title }}</h2>
+            <p class="muted">
+                {{ selected_task.subject.name }} · {{ selected_task.type }} ·
+                Deadline: {{ selected_task.deadline.strftime('%Y-%m-%d %H:%M') }}
+            </p>
+        </div>
+        <a class="btn primary" href="{{ url_for('admin_download_all', task_id=selected_task.id) }}">Download All as ZIP</a>
+    </div>
+</section>
+{% endif %}
+<section class="card">
+    <h2>Submitted Work</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Student</th><th>Task</th><th>Submitted At</th><th>Late?</th><th>File</th><th>Status / Review</th></tr>
+            </thead>
+            <tbody>
+            {% for s in submissions %}
+                <tr>
+                    <td><strong>{{ s.student.name }}</strong><br><span class="muted">{{ s.student.roll_number }}</span></td>
+                    <td>{{ s.task.title }}<br><span class="muted">{{ s.task.subject.name }} · {{ s.task.type }}</span></td>
+                    <td>{{ s.submitted_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        {% if s.submitted_at > s.task.deadline %}
+                            <span class="badge rejected">Late</span>
+                        {% else %}
+                            <span class="badge accepted">On time</span>
+                        {% endif %}
+                    </td>
+                    <td><a class="btn small" href="{{ url_for('download_submission', submission_id=s.id) }}">Download</a></td>
+                    <td>
+                        <form method="post" action="{{ url_for('admin_update_submission', submission_id=s.id) }}" class="status-form">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <select name="status">
+                                {% for st in ['pending', 'submitted', 'accepted', 'rejected'] %}
+                                    <option value="{{ st }}" {% if s.status == st %}selected{% endif %}>{{ st }}</option>
+                                {% endfor %}
+                            </select>
+                            <input name="admin_note" type="text" value="{{ s.admin_note or '' }}" placeholder="Admin note">
+                            <button class="btn small primary" type="submit">Save</button>
+                        </form>
+                        <span class="badge {{ s.status }}">{{ s.status }}</span>
+                        {% if s.reviewed_at %}
+                            <div class="muted small">Reviewed: {{ s.reviewed_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="6" class="muted">No submissions match this filter.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% if selected_task %}
+<section class="card">
+    <h2>Not Submitted ({{ missing_students|length }})</h2>
+    {% if missing_students %}
+        <ul class="list">
+            {% for student in missing_students %}
+                <li><strong>{{ student.name }}</strong> <span class="muted">({{ student.roll_number }})</span></li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="muted">All active students have submitted this task.</p>
+    {% endif %}
+</section>
+{% endif %}
+{% endblock %}
